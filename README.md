@@ -25,74 +25,72 @@ THE SOFTWARE.
 ~~~
 
 # Introduction
-This python script allows to monitor the modbus RTU messages with wireshark. \
-It connects to a serial port where the modbus usb adapter (RS485) is connected to and creates a file pipe.\
-All captured data are put into pcap packages that can be received via this pipe
-by whireshark to display the modbus packages.
+This Python script allows you to monitor Modbus RTU messages with Wireshark. \
+It connects to a serial port where the Modbus USB adapter (RS485) is attached and creates a file pipe (FIFO). \
+All captured data is packaged into pcap packets that can be received via this pipe by Wireshark to display the Modbus packets.
 
 # Changes / Added Features
 Project is originally cloned from https://github.com/Pinoccio/tool-serial-pcap
 
-- use a user DLT (data link type) and remove not-working pcap encapsulation
-- remove blocking code that prevents getting data from usb modbus adapter
-- keep serial port always open instead of open/close on each cycle (avoids loosing data)
-- add modbus RTU package parser
-- output packages on command line (while forwarding to wireshark via pipe /tmp/wireshark)
+- Use a user DLT (data link type) and remove non-working pcap encapsulation
+- Remove blocking code that prevents receiving data from the USB Modbus adapter
+- Keep the serial port always open instead of opening/closing on each cycle (avoids losing data)
+- Add Modbus RTU packet parser
+- Output packets on the command line (while forwarding to Wireshark via the pipe /tmp/wireshark)
 
 # Installation and Start
-There are two ways: in system or indirectly in a venv via serial-pcap.sh
+There are two ways: directly in your system or indirectly in a venv via serial-pcap.sh
 
 **Manually**
 ~~~sh
-# install python3 on your system
+# Install python3 on your system
 apt install python3
 
-# way 1: install dependency on your system
+# Install dependency on your system
 pip install pyserial
 
-# start script
+# Start script
 /serial-pcap.py -b 19200 --fifo /tmp/wireshark /dev/ttyUSB0
 ~~~
 
-**Indirectly via venv***
-the virtual environment directory is created in ./.venv.
+**Indirectly via venv**
+The virtual environment directory is created in ./.venv.
 ~~~sh
-# start script (via venv)
+# Start script (via venv)
 ./serial-pcap.sh
 ~~~
 
 ## Prepare Wireshark
-Wireshark allows to read data from pipes. It handles the data same way as it
-loads a pcap file. The script first creates a pcap header and all other
-request and response packages are packed into their own pcap records.
+Wireshark allows reading data from pipes and handles the data the same way as it loads a pcap file.
+The script first creates a pcap header, and all subsequent request and response packets are packed into their own pcap records.
 
-To let wireshark get the needed pcap header, wireshark must be configured and started
-**BEFORE** starting the ```serial-pcap.py``` script.
+To ensure Wireshark receives the required pcap header, Wireshark must be configured and started **BEFORE** starting the ```serial-pcap.py``` script.
 
-- start serial-pcap.py
-- start wireshark
-- configure wireshark to process the user DLT (used by script in pcap header) as modbus rtu packages
-  - go to ```Edit->Preferences->Protocol->DLT_USER```
-  - edit *Encapsulations Table*
-  - add a new entry (if not already) select ```DLT=147``` for DLT and set *Payload protocol* to ```mbrtu```
-  - press ok and close preferences
-- go to ```Capture->Options->Manage Interfaces->Pipes```, add the pipe ```/tmp/wireshark``` and press ok
-- **select the pipe** (in current dialog, which is added to the list)
-- Apply display filter "modbus"
-- press "start"
+- Start serial-pcap.py
+- Start Wireshark
+- Configure Wireshark to process the user DLT (used by script in the pcap header) as Modbus RTU packets:
+  - Go to ```Edit->Preferences->Protocol->DLT_USER```
+  - Edit *Encapsulations Table*
+  - Add a new entry (if not already), select ```DLT=147``` for DLT, and set _Payload protocol_ to ```mbrtu```
+  - Press OK and close Preferences
+- Go to ```Capture->Options->Manage Interfaces->Pipes```, add the pipe ```/tmp/wireshark``` and press OK
+- **Select the pipe** (in current dialog, which is now added to the list)
+- Apply the display filter "modbus"
+- press "Start"
 
-When there was a pipe already created before (manually via ```mkfifo /tmp/wireshark``` or by a previous call of serial-pcap) wireshark starts monitoring
+If the pipe was already created before (manually via mkfifo /tmp/wireshark or by a previous call to serial-pcap),
+Wireshark will start monitoring.
 
-Unfortunately wireshark only remembers the Encapsulations Tabel entries, but
-not the pipe. This must be configured each time after starting wireshark
+Unfortunately, Wireshark only remembers the Encapsulations Table entries, but not the pipe.
+The pipe must be configured each time after starting Wireshark.
 
 ## Windows WSL2 / Linux
-When running on Windows WSL2, use the **"WSL USB Manager"** to pass the USB RS485 dongle to WSL.
-- Then add the WSL2 user to group 'dialout' allowing access to /dev/ttyX....
+When running on Windows WSL2, use **"WSL USB Manager"** to pass the USB RS485 dongle to WSL.
+- Add the WSL2 user to the 'dialout' group to allow access to /dev/ttyX....
   `usermod -aG dialout your-user-name`
-- Install the wireshark within WSL2 to access the /tmp/wireshark (pipe).
+- Install Wireshark within WSL2 to access the /tmp/wireshark (pipe).
   `apt install wireshark`
-- Add user to wireshark group
+- Add the user to 'wireshark' group
     `usermod -aG wireshark your-user-name`
 
 Command line tool: https://github.com/dorssel/usbipd-win
