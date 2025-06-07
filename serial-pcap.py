@@ -37,7 +37,6 @@ import select
 import binascii
 import datetime
 import argparse
-import binascii
 
 version = "1.1"
 # This script reads packets from a serial port and writes them to a pcap file or fifo.
@@ -108,7 +107,7 @@ def open_fifo(options, name):
         raise
 
     if not options.quiet:
-        print("Waiting for fifo to be openend...")
+        print("Waiting for fifo to be opened...")
     # This blocks until the other side of the fifo is opened
     ret = open(name, 'wb')
     print("Fifo connected")
@@ -146,9 +145,10 @@ def main():
             print("serial-pcap.py version {}".format(version))
             print("Reading from serial port {} at {} baud".format(options.port, options.baudrate))
             print("Output will be written to {}".format(options.fifo if options.fifo else options.write_file if options.write_file else "stdout"))
+
         timeout=0.01
         try:
-          ser = serial.Serial(options.port, options.baudrate,serial.EIGHTBITS,serial.PARITY_EVEN,serial.STOPBITS_ONE,timeout)
+          ser = serial.Serial(options.port, options.baudrate, serial.EIGHTBITS, serial.PARITY_EVEN,serial.STOPBITS_ONE, timeout)
         except serial.SerialException as e:
             print(f"Error opening serial port {options.port}: {e}")
             sys.exit(1)
@@ -263,7 +263,7 @@ def do_sniff_once(options, out, ser):
         # 3. Read Response (Funktionscode 1-4, variable Länge, plausibler Byte Count)
         elif func_code in (1, 2, 3, 4):
             if len(buffer) < 5:
-                print("Not enough data for Read Response")
+                #print("Not enough data for Read Response")
                 break
             byte_count = buffer[2]
             # Plausibilitätscheck: Byte Count nicht zu groß und nicht 0
@@ -282,7 +282,7 @@ def do_sniff_once(options, out, ser):
             continue
 
         if len(buffer) < pkt_len:
-            print(f"Not enough data for packet of length {pkt_len}, waiting for more data")
+            #print(f"Not enough data for packet of length {pkt_len}, waiting for more data")
             break
 
         pkt = read_exact_from_buffer(pkt_len)
